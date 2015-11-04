@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title> Motor Experiment </title>
+	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+	<script type="text/javascript" src="http://code.jquery.com/jquery-1.10.1.js"></script>
+	<script type="text/javascript" src="http://code.highcharts.com/highcharts.js"></script>
+	
+<style type="text/css">
+
+	h1 {
+		padding-left: 15px;
+	}
+	
+	h3 {
+		font: bold 14px Tahoma;
+	}
+		
+	#big_wrapper {
+		border: 2pt solid black;
+		width:600px;
+		margin: 15px auto;
+	}
+	
+	#small_wrapper {
+		width: 830px;
+		margin: 15px auto;
+	}
+	
+	#dropdownBox {
+		padding-top: 10px;
+		padding-left: 15px;
+	}
+	
+	#slider {
+		width : 400px;
+		padding-top: 30px;
+		padding-left: 15px;	
+	}
+	
+	#submit {
+		padding-top: 30px;
+		padding-left: 15px;
+		padding-bottom: 20px;	
+	}
+</style>
+<script>
+	var chart;
+	
+	function plot(newPoint) {
+		console.log(newPoint);
+		
+		var series = chart.series[0],
+			shift = series.data.length > 20; //shift graph
+			
+		chart.series[0].addPoint(newPoint, true, shift);
+	};
+	
+	$(document).ready(function() {
+	    chart = new Highcharts.Chart({
+	        chart: {
+	            renderTo: 'container',
+	            defaultSeriesType: 'spline'
+	        },
+	        title: {
+	            text: 'Time vs Temperature'
+	        },
+	        
+	        xAxis: {
+	            //type: 'datetime',
+	            tickPixelInterval: 50,
+	            title: {
+	                text: 'Time (s)',
+	                margin: 10
+	            }
+	        },
+	        yAxis: {
+	            minPadding: 0.2,
+	            maxPadding: 0.2,
+	            title: {
+	                text: 'Temperature',
+	                margin: 20
+	            }
+	        },
+	        series: [{
+					name: 'Temperature data',
+					data: []
+				}]
+	    });        
+	});
+</script>
+</head>
+
+<body>
+
+	<div id = "big_wrapper">	
+	
+		<h1> Motor Experiment Student Page</h1>
+
+		<div id="dropdownBox">
+		<h3> Source </h3>
+		<select id="sources">
+		  <option value="uniPi">uniPi</option>		  
+		</select>
+		
+		<h3> Experiment ID </h3>
+		<select id="expID">
+		  <option value="1">1</option>		  
+		</select>
+		</div>
+		
+		<div id = "slider">
+			
+				Percentage of Full Power:   <span id="range">25</span> <br>
+				<input type="range" min="1" max="100" value="25" step="1" onchange="showValue(this.value)"/>	  
+			
+		</div>	
+			
+		<div id="submit">	
+			<button onclick="sendMessage()"> Submit</button>
+			<button onclick="sendStopMessage()" style="margin-left:20px"> Stop</button>
+		</div>
+		
+	</div>
+
+	<div id="small_wrapper">
+		
+		<div id="container" style="width:800px; height:400px;"></div>
+		
+	</div>
+
+<script>
+	function sendMessage() {
+		var oSource = sources.value;
+		var experiment = expID.value;
+		var percentage = parseInt(document.getElementById("range").innerHTML);
+		
+		var payload = {
+			id: experiment,
+			percentage: percentage,
+			source: oSource
+		};
+		console.log(JSON.stringify(payload));
+		sws.send(JSON.stringify(payload));
+	}
+	
+	function sendStopMessage() {
+		var oSource = sources.value;
+		var experiment = expID.value;
+		
+		var payload = {
+			id: experiment,
+			percentage: 0,
+			source: oSource
+		};
+		console.log(JSON.stringify(payload));
+		sws.send(JSON.stringify(payload));
+	}
+	
+	function alertFunction() {
+	    alert("Hello! I am an alert box!");
+	    console.log("testing");
+	}
+	
+	function showValue(newValue)
+	{
+		document.getElementById("range").innerHTML=newValue;
+	}
+</script>
+	
+<script type="application/javascript">
+	var wsURL = "ws://130.102.86.73:1880/ws/motor";
+	var subURL = "ws://130.102.86.73:1880/ws/submit";
+	var startTime = -1;
+	
+	//Open up a websocket
+	ws = new WebSocket(wsURL);
+	ws.onopen = function(ev) {
+		console.log("Websocket connected");
+	};
+	
+	ws.onclose = function(ev) {
+		console.log("Websocket disconnected");
+	};
+	
+	ws.onerror = function(ev) {
+		console.log("Websocket error!!");
+	};
+	
+	ws.onmessage = function(ev){
+		if (startTime < 0)
+			startTime = new Date().getTime();
+			
+		console.log("Message received");
+		console.log(ev.data);
+		
+		var time = (new Date().getTime()) - startTime;
+		var newData = [time/1000, parseFloat(ev.data.replace( /^\D+/g, ''))];
+		plot(newData);
+	};
+	
+	sws = new WebSocket(subURL);
+	sws.onopen = function(ev) {
+		console.log("Websocket connected");
+	};
+	
+	sws.onclose = function(ev) {
+		console.log("Websocket disconnected");
+	};
+	
+	sws.onerror = function(ev) {
+		console.log("Websocket error!!");
+	};
+</script>
+
+
+</body>
+</html>
