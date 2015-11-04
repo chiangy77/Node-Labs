@@ -1,0 +1,53 @@
+<script type="text/x-red" data-template-name="agent">
+	<div class="form-row">
+        <label for="node-input-port"><i class="fa fa-ship"></i> Port</label>
+        <input type="text" id="node-input-port" placeholder="Port" style="width: 300px;">
+    </div>
+	
+	<div class="form-row">
+        <label for="node-input-host"><i class="fa fa-sitemap"></i> Host</label>
+        <input type="text" id="node-input-host" placeholder="Broker Host" style="width: 300px;">
+    </div>
+	
+	<div class="form-row">
+        <label for="node-input-guid"><i class="fa fa-lock"></i> Agent GUID</label>
+        <input type="text" id="node-input-guid" placeholder="Agent GUID" style="width: 300px;">
+    </div>
+	
+	<div class="form-row">
+        <label for="node-input-passkey"><i class="fa fa-key"></i> Agent Passkey</label>
+        <input type="text" id="node-input-passkey" placeholder="Agent Passkey" style="width: 300px;">
+    </div>
+	
+    <div class="form-row">
+       <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="agent">
+    <p>Starts an instance of an Agent</p>
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('agent',{
+        category: 'function',
+        color: '#00FFFF',
+        defaults: {
+			name: {value:""},
+			port: {value:"2000"},
+            host: {value:"localhost"},
+			guid: {value:"zyL5UAXuJm4NBRhdtqJiIRtZ9hGPhwFK"},
+			passkey: {value:"axmbsE3Yb0MwQJbj6Tsou2sZb7cdCuYt"}
+        },
+        inputs:1,
+        outputs:1,
+        icon: "debug.png",
+        label: function() {
+            return this.name||"agent";
+        },
+		labelStyle: function() {
+            return this.name?"node_label_italic":"";
+        }
+    });
+</script>
